@@ -6,6 +6,6 @@
   "scripts": {
     "build": "node ./scripts/build.js"
   },
-  "author": "arwenfang",
+  "author": "",
   "license": "ISC"
 }
