@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache, must-revalidate">
+	<title>吉野家商圈数据展示</title>
+	<style>
+		/* reset */
+		html,body,h1,h2,h3,h4,h5,h6,div,dl,dt,dd,ul,ol,li,p,blockquote,pre,hr,figure,table,caption,th,td,form,fieldset,legend,input,button,textarea,menu{margin:0;padding:0;}
+		header,footer,section,article,aside,nav,hgroup,address,figure,figcaption,menu,details{display:block;}
+		table{border-collapse:0;border-spacing:0;}
+		caption,th{text-align:left;font-weight:normal;}
+		html,body,fieldset,img,iframe,abbr{border:0;}
+		i,cite,em,var,address,dfn{font-style:normal;}
+		[hidefocus],summary{outline:0;}
+		li{list-style:none;}
+		h1,h2,h3,h4,h5,h6,small{font-size:100%;}
+		sup,sub{font-size:83%;}
+		pre,code,kbd,samp{font-family:inherit;}
+		q:before,q:after{content:none;}
+		textarea{overflow:auto;resize:none;}
+		label,summary{cursor:default;}
+		a,button{cursor:pointer;}
+		h1,h2,h3,h4,h5,h6,em,strong,b{font-weight:bold;}
+		del,ins,u,s,a,a:hover{text-decoration:none;}
+		body,textarea,input,button,select,keygen,legend{font:12px/1.14 "Microsoft YaHei",\5b8b\4f53;color:#333;outline:0;}
+		body{background:#fff;}
+		a,a:hover{color:#333;}
+
+		html,body{width:100%;height:100%;overflow:hidden;margin:0;}
+		html{_height:auto;_padding:0 0 0 0;}
+		*,:after,:before{box-sizing:border-box}
+		
+		#app,#amap{
+			width:100%;
+			height:100%;
+			position:relative;
+		}
+		.title{
+			position: absolute;
+			width:235px;
+			height:60px;
+			font-size:20px;
+			line-height: 60px;
+			text-align: center;
+			border:1px solid #aaa;
+			border-radius: 10px;
+			left:10px;
+			top:10px;
+			z-index:9999;
+			background:rgba(255,255,255,0.8);
+		}
+		#amap span.circleLabel{
+			display: inline-block;
+			padding:5px 10px;
+			border:1px solid blue;
+			position: absolute;
+			background:#fff;
+		}
+	</style>
+	<script src="https://api.map.baidu.com/api?v=2.0&ak=vkzr3DGaes6Vs1gvn3GYHSxgj5aGfsV2" charset="utf-8" type="text/javascript"></script>
+	<script src="https://static.can-dao.com/lib/vue/vue.min.js?v=2.2.4"></script>
+</head>
+<body>
+	<div id="app">
+		<div class="title">吉野家门店商圈展示</div>
+		<div id="amap"></div>
+	</div>
+	<script>
+		window.onload = function(){
+      let getCenter = (lnglats) => {
+        let lngs = lnglats.reduce((prev, item) => {
+          return Number(prev) + Number(item[0]);
+        }, [])
+        let lats = lnglats.reduce((prev, item) => {
+          return Number(prev) + Number(item[1]);
+        }, [])
+
+        return [lngs / lnglats.length, lats / lnglats.length]
+      }
+			let polygonOptions = {
+			  	strokeColor: "#0000ff",
+			  	strokeOpacity: 1,
+			  	strokeWeight: 2,
+			  	fillColor: "#f5deb3",
+			  	fillOpacity: 0.4
+			}
+			let polygonOptions_hover = {
+				strokeColor: "#ff00ff",
+			  	strokeOpacity: 1,
+			  	strokeWeight: 2,
+			  	fillColor: "red",
+			  	fillOpacity: 0.4
+			}
+      let circleData = [{"storeId":10048170,"storeName":"中昂物美店","cityName":"北京市","districtName":"门头沟","address":"北京市门头沟区路11号院1号商业楼B1-01-12","longitude":116.10194013913461,"latitude":39.94935284664654,"storeRanges":[{"deliverId":800089012,"brandId":4,"storeId":10048170,"rangeName":"春节商圈","rangeType":1,"dispatchRange":{"type":"Polygon","coordinates":[[[116.079354,39.944788],[116.078732,39.94715],[116.088216,39.951612],[116.087138,39.953603],[116.089869,39.956604],[116.092942,39.956707],[116.094267,39.957373],[116.094809,39.958151],[116.099058,39.960087],[116.098892,39.958516],[116.100329,39.957826],[116.106895,39.947504],[116.107303,39.94509],[116.108054,39.942723],[116.108816,39.940985],[116.102159,39.938735],[116.096644,39.936951],[116.097958,39.934244],[116.098961,39.931743],[116.098741,39.93157],[116.095882,39.932039],[116.093173,39.93273],[116.090663,39.93366],[116.088393,39.93475],[116.086191,39.936122],[116.084252,39.937633],[116.081948,39.940093],[116.080341,39.942515],[116.079354,39.944788]]]}}]}]; 
+			new Vue({
+				el:'#app'
+				,data:{
+					circleData
+					,polygonOptions
+					,polygonOptions_hover
+				}
+				,created(){
+					this.$nextTick(() => {
+						this.showCircleMap();
+					})
+				}
+				,methods:{
+					showCircleMap(){
+            var search = location.search;
+						let map = new BMap.Map('amap');
+            let longitude = this.circleData[0].longitude;
+            let latitude = this.circleData[0].latitude;
+            let multiple = 14;
+
+						map.centerAndZoom(new BMap.Point(longitude, latitude), multiple);
+						map.enableScrollWheelZoom(true);
+					    // map.setCity('北京市');
+					    let mapDom = document.getElementById('amap');
+					    let self = this;
+					    let overlays = [];
+					    this.circleData.forEach(m => {
+							let PI = Math.PI * 3000.0 / 180.0;
+							let x = m.longitude, y = m.latitude;
+							let z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * PI);
+							let theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * PI);
+							let lng = z * Math.cos(theta) + 0.0065;//经度
+							let lat = z * Math.sin(theta) + 0.006;//纬度
+							// return {lng,lat};
+							m.longitude = lng;
+							m.latitude = lat;
+
+					    	let point = new BMap.Point(m.longitude, m.latitude);
+						    let marker = new BMap.Marker(point);
+						    let label = new BMap.Label(m.storeName,{offset:new BMap.Size(-15,26)})
+						    marker.setLabel(label);
+						    map.addOverlay(marker);
+					    	overlays.push(marker);
+					    	if(m.storeRanges && m.storeRanges.length){
+					    		m.storeRanges.forEach(n => {
+					    			if(n.dispatchRange && n.dispatchRange.coordinates && n.dispatchRange.coordinates.length){
+					    				n.dispatchRange.coordinates.forEach(ci => {
+					    					let options = self.polygonOptions;
+					    					let points = [];
+					    					ci.forEach(m=>{
+												let PI = Math.PI * 3000.0 / 180.0;
+												let x = m[0], y = m[1];
+												let z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * PI);
+												let theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * PI);
+												let lng1 = z * Math.cos(theta) + 0.0065;//经度
+												let lat1 = z * Math.sin(theta) + 0.006;//纬度
+												m[0] = lng1;
+												m[1] = lat1;
+
+										    points.push(new BMap.Point(m[0], m[1]));
+											})
+
+                        let pointCi = new BMap.Point(...getCenter(ci));
+                        let labelCi = new BMap.Label(n.rangeName,{offset:new BMap.Size(-16,-16),position:pointCi})
+                        map.addOverlay(labelCi);
+
+										    let _polygon = new BMap.Polygon(points, options);
+										    map.addOverlay(_polygon);
+										    overlays.push(_polygon);
+									      	_polygon.addEventListener('mousedown',(e)=>{
+									      		let span = document.createElement('span');
+									      		span.className = 'circleLabel';
+									      		span.innerHTML = n.rangeName;
+									      		span.style.left = e.pixel.x + 'px';
+									      		span.style.top = e.pixel.y + 'px';
+									      		mapDom.appendChild(span);
+									      		setTimeout(() => {
+									      			mapDom.removeChild(span);
+									      		}, 1500)
+									      	})
+									      	_polygon.addEventListener('mouseover',(e)=>{
+									      		let options = self.polygonOptions_hover;
+					    						_polygon.setStrokeColor(options.strokeColor);
+					    						_polygon.setFillColor(options.fillColor);
+									      	})
+									      	_polygon.addEventListener('mouseout',(e)=>{
+									      		let options = self.polygonOptions;
+					    						_polygon.setStrokeColor(options.strokeColor);
+					    						_polygon.setFillColor(options.fillColor);
+									      	})
+					    				})
+					    			}
+						    	})
+					    	}
+					    })
+					    map.setViewport();
+					}
+				}
+			})
+		}
+	</script>
+</body>
+</html>

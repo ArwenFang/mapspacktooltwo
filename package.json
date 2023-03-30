@@ -1,0 +1,11 @@
+{
+  "name": "mapspacktool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build.js",
+  "scripts": {
+    "build": "node ./scripts/build.js"
+  },
+  "author": "arwenfang",
+  "license": "ISC"
+}
